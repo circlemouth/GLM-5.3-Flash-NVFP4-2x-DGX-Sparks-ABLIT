@@ -251,7 +251,7 @@ def capability_warnings(profile, image, *, recovery=False):
     return []
 
 
-def derived_checks(profile, metadata):
+def derived_checks(profile, metadata, *, evidence=None):
     """Fail closed unless the checkpoint and each overlay are the declared ones."""
     derived = settings.derived_checkpoint(profile)
     if not derived:
@@ -298,12 +298,16 @@ def derived_checks(profile, metadata):
             checks["derived_manifest"] = (
                 report["manifest"]["transformed_key_count"] == 88
             )
+            if checks["derived_manifest"] and evidence is not None:
+                evidence["derived_manifest"] = report
         except (OSError, ValueError, KeyError, TypeError):
             checks["derived_manifest"] = False
     return checks
 
 
-def preflight(profile, config_path, rank, *, check_memory=True, recovery=False):
+def preflight(
+    profile, config_path, rank, *, check_memory=True, recovery=False, evidence=None
+):
     cache = Path.home() / ".cache/huggingface"
     lock = load_lock()
     source = host.snapshot_from_state(
@@ -324,7 +328,7 @@ def preflight(profile, config_path, rank, *, check_memory=True, recovery=False):
     checks["full_model"] = metadata["text_config"][
         "num_hidden_layers"
     ] == MODEL_LAYERS and not metadata.get("_test_fixture_only")
-    checks.update(derived_checks(profile, metadata))
+    checks.update(derived_checks(profile, metadata, evidence=evidence))
     overlay = settings.weight_overlay(profile)
     if overlay:
         from .runtime.weight_overlay import verify_assets

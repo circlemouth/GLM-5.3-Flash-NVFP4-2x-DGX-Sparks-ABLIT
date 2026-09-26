@@ -141,6 +141,20 @@ class BuildSafetyTests(unittest.TestCase):
                     axl / "derived",
                 )
 
+    def test_atomic_publication_never_replaces_an_existing_directory(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "staging"
+            target = root / "checkpoint"
+            source.mkdir()
+            target.mkdir()
+            (source / "new").write_text("new", encoding="utf-8")
+            with self.assertRaisesRegex(axl_ablit.AxlAblitError, "already exists"):
+                axl_ablit._rename_noreplace(source, target)
+            self.assertTrue((source / "new").is_file())
+            self.assertTrue(target.is_dir())
+            self.assertEqual(list(target.iterdir()), [])
+
 
 class QuantizerTests(unittest.TestCase):
     @unittest.skipIf(torch is None, "torch is not installed")
@@ -246,12 +260,17 @@ class ManifestAndProfileTests(unittest.TestCase):
                 "quantized_layers": {},
             }
         }
-        report = {"manifest": {"transformed_key_count": 88}}
+        report = {
+            "manifest": {"transformed_key_count": 88},
+            "manifest_sha256": "1" * 64,
+        }
+        evidence = {}
         with mock.patch.object(
             axl_ablit, "verify_manifest", return_value=report
         ) as verify:
-            checks = server.derived_checks(profile, metadata)
+            checks = server.derived_checks(profile, metadata, evidence=evidence)
         self.assertIs(checks["derived_manifest"], True)
+        self.assertIs(evidence["derived_manifest"], report)
         verify.assert_called_once_with(
             Path(profile["runtime"]["derived_checkpoint"]["path"]), "1" * 64
         )
@@ -280,6 +299,15 @@ class ManifestAndProfileTests(unittest.TestCase):
         self.assertEqual(identity["donor_revision"], "donor-revision")
         self.assertEqual(identity["transformed_key_count"], 88)
         self.assertRegex(identity["artifact_sha256"], r"^[0-9a-f]{64}$")
+        reused = {"manifest": manifest, "manifest_sha256": "1" * 64}
+        with mock.patch.object(axl_ablit, "verify_manifest") as verify:
+            reused_identity = launch_assets.derived_identity(
+                Path("/derived"),
+                {"path": "/derived", "manifest_sha256": "1" * 64},
+                manifest_report=reused,
+            )
+        verify.assert_not_called()
+        self.assertEqual(reused_identity, identity)
 
     def test_build_publishes_only_after_full_synthetic_verification(self):
         with tempfile.TemporaryDirectory() as directory:

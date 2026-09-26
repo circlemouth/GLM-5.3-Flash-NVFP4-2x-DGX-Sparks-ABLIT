@@ -14,11 +14,17 @@ def sha(path):
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
-def derived_identity(model, derived):
+def derived_identity(model, derived, *, manifest_report=None):
     if derived and "manifest_sha256" in derived:
-        from .axl_ablit import verify_manifest
+        if manifest_report is None:
+            from .axl_ablit import verify_manifest
 
-        report = verify_manifest(model, derived["manifest_sha256"])
+            manifest_report = verify_manifest(model, derived["manifest_sha256"])
+        report = manifest_report
+        if report["manifest_sha256"] != derived["manifest_sha256"]:
+            raise ValueError(
+                "Derived checkpoint manifest evidence does not match profile"
+            )
         manifest = report["manifest"]
         return {
             "enabled": True,
@@ -36,8 +42,14 @@ def derived_identity(model, derived):
 
 
 def inspect(profile, config_path, rank, *, recovery=False):
+    evidence = {}
     checks = server.preflight(
-        profile, config_path, rank, check_memory=False, recovery=recovery
+        profile,
+        config_path,
+        rank,
+        check_memory=False,
+        recovery=recovery,
+        evidence=evidence,
     )
     if not checks["passed"]:
         detail = {key: checks[key] for key in ("checks", "foreign_gpu_containers")}
@@ -109,7 +121,9 @@ def inspect(profile, config_path, rank, *, recovery=False):
             if settings.weight_overlay(profile)
             else {"enabled": False}
         ),
-        "derived_checkpoint": derived_identity(model, derived),
+        "derived_checkpoint": derived_identity(
+            model, derived, manifest_report=evidence.get("derived_manifest")
+        ),
         "model_config": sha(model / "config.json"),
         "weight_index": sha(index_path),
         "tokenizer_and_templates": {

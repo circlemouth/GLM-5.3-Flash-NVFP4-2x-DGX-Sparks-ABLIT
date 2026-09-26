@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import ctypes
+import errno
 import gc
 import hashlib
 import json
@@ -637,6 +639,38 @@ def _aggregate_invariants(rows: list[tuple]) -> str:
     return digest.hexdigest()
 
 
+def _rename_noreplace(source: Path, target: Path) -> None:
+    """Atomically publish a directory without replacing any existing target."""
+    libc = ctypes.CDLL(None, use_errno=True)
+    renameat2 = getattr(libc, "renameat2", None)
+    if renameat2 is None:
+        raise AxlAblitError("atomic no-replace rename is unavailable")
+    renameat2.argtypes = [
+        ctypes.c_int,
+        ctypes.c_char_p,
+        ctypes.c_int,
+        ctypes.c_char_p,
+        ctypes.c_uint,
+    ]
+    renameat2.restype = ctypes.c_int
+    at_fdcwd = -100
+    rename_noreplace = 1
+    if (
+        renameat2(
+            at_fdcwd,
+            os.fsencode(source),
+            at_fdcwd,
+            os.fsencode(target),
+            rename_noreplace,
+        )
+        != 0
+    ):
+        error = ctypes.get_errno()
+        if error in {errno.EEXIST, errno.ENOTEMPTY}:
+            raise AxlAblitError("output already exists")
+        raise OSError(error, os.strerror(error), target)
+
+
 def build(
     axl: Path, nvidia: Path, donor: Path, reproduction: Path, output: Path
 ) -> dict:
@@ -765,7 +799,7 @@ def build(
         shutil.rmtree(temp)
         verify(staging, base=axl, allow_incomplete=True)
         (staging / ".incomplete").unlink()
-        os.rename(staging, output)
+        _rename_noreplace(staging, output)
         return manifest
     except BaseException:
         shutil.rmtree(staging, ignore_errors=True)
