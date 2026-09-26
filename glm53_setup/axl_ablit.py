@@ -205,20 +205,37 @@ def read_header(path: Path) -> tuple[int, dict]:
     return header_len, header
 
 
-def tensor_meta(root: Path, index: dict, key: str) -> tuple[Path, int, dict]:
+def tensor_meta(
+    root: Path,
+    index: dict,
+    key: str,
+    *,
+    headers: dict[Path, tuple[int, dict]] | None = None,
+) -> tuple[Path, int, dict]:
     name = index["weight_map"].get(key)
     if not isinstance(name, str):
         raise AxlAblitError(f"index is missing tensor: {key}")
     path = root / name
-    header_len, header = read_header(path)
+    if headers is None:
+        header_len, header = read_header(path)
+    else:
+        if path not in headers:
+            headers[path] = read_header(path)
+        header_len, header = headers[path]
     item = header.get(key)
     if not isinstance(item, dict):
         raise AxlAblitError(f"indexed shard is missing tensor: {key}")
     return path, header_len, item
 
 
-def hash_tensor(root: Path, index: dict, key: str) -> dict:
-    path, header_len, item = tensor_meta(root, index, key)
+def hash_tensor(
+    root: Path,
+    index: dict,
+    key: str,
+    *,
+    headers: dict[Path, tuple[int, dict]] | None = None,
+) -> dict:
+    path, header_len, item = tensor_meta(root, index, key, headers=headers)
     start, end = item["data_offsets"]
     digest = hashlib.sha256()
     with path.open("rb") as stream:
@@ -1011,9 +1028,10 @@ def verify(
     actual_manifest_sha = launch["manifest_sha256"]
     index = _json(root / INDEX_NAME)
     names = sorted(set(index.get("weight_map", {}).values()))
+    output_headers: dict[Path, tuple[int, dict]] = {}
     transformed_actual = {}
     for key in transformed_keys():
-        actual = hash_tensor(root, index, key)
+        actual = hash_tensor(root, index, key, headers=output_headers)
         expected = manifest["transformed_keys"][key]
         if (
             actual["sha256"] != expected["output_sha256"]
@@ -1031,15 +1049,18 @@ def verify(
         base_index = _json(base / INDEX_NAME)
         if index["weight_map"] != base_index["weight_map"]:
             raise AxlAblitError("derived checkpoint index mapping changed")
+        base_headers: dict[Path, tuple[int, dict]] = {}
         for name in names:
-            _, base_header = read_header(base / name)
-            _, output_header = read_header(root / name)
-            if set(base_header) != set(output_header):
+            base_headers[base / name] = read_header(base / name)
+            if root / name not in output_headers:
+                output_headers[root / name] = read_header(root / name)
+            if set(base_headers[base / name][1]) != set(output_headers[root / name][1]):
                 raise AxlAblitError(f"derived checkpoint shard keys changed: {name}")
         invariant_rows = []
         transformed = set(transformed_keys())
+        affected_shards = {index["weight_map"][key] for key in transformed}
         for key in transformed_keys():
-            source = hash_tensor(base, base_index, key)
+            source = hash_tensor(base, base_index, key, headers=base_headers)
             expected = manifest["transformed_keys"][key]
             if source["sha256"] != expected["base_axl_sha256"]:
                 raise AxlAblitError(f"base transformed tensor drifted: {key}")
@@ -1054,13 +1075,11 @@ def verify(
         for key in sorted(index["weight_map"]):
             if key in transformed:
                 continue
-            source = hash_tensor(base, base_index, key)
-            output = hash_tensor(root, index, key)
+            source = hash_tensor(base, base_index, key, headers=base_headers)
+            output = hash_tensor(root, index, key, headers=output_headers)
             if source != output:
                 raise AxlAblitError(f"non-target tensor drifted: {key}")
-            if index["weight_map"][key] in {
-                index["weight_map"][item] for item in transformed
-            }:
+            if index["weight_map"][key] in affected_shards:
                 invariant_rows.append(
                     (key, source["dtype"], source["shape"], source["sha256"])
                 )

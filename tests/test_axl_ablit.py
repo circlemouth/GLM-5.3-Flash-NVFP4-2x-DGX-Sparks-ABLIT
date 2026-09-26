@@ -432,6 +432,18 @@ class ManifestAndProfileTests(unittest.TestCase):
                 )["transformed_key_count"],
                 88,
             )
+            # Full base comparison must validate each shard header once rather
+            # than parsing every shard header again for every indexed tensor.
+            with (
+                mock.patch.object(
+                    axl_ablit, "validate_axl_identity", return_value=identity
+                ),
+                mock.patch.object(
+                    axl_ablit, "read_header", wraps=axl_ablit.read_header
+                ) as read_header,
+            ):
+                axl_ablit.verify(output, base=axl)
+                self.assertEqual(read_header.call_count, 2)
 
             failed = root / "failed"
             with (
