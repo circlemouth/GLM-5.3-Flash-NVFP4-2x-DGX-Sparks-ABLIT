@@ -367,7 +367,10 @@ class ManifestAndProfileTests(unittest.TestCase):
                 for position, key in enumerate(axl_ablit.transformed_keys(), start=1):
                     dtype, shape, raw = tensors[key]
                     data = bytes([position % 251 or 1]) * len(raw)
-                    if key == f"{axl_ablit.main_stem(16)}.weight_scale_2":
+                    if key in {
+                        f"{axl_ablit.main_stem(16)}.weight_scale_2",
+                        axl_ablit.mtp_key(),
+                    }:
                         data = raw
                     info = axl_ablit._replacement_file(
                         temp / f"replacement-{position}.bin", data, dtype, shape
