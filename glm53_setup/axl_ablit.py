@@ -1043,8 +1043,10 @@ def verify(
             expected = manifest["transformed_keys"][key]
             if source["sha256"] != expected["base_axl_sha256"]:
                 raise AxlAblitError(f"base transformed tensor drifted: {key}")
-            if source == transformed_actual[key]:
-                raise AxlAblitError(f"transformed tensor was not changed: {key}")
+            # A recomputed scale can legitimately be byte-identical (notably the
+            # scalar global scale); each donor weight itself must still differ.
+            if key.endswith(".weight") and source == transformed_actual[key]:
+                raise AxlAblitError(f"transformed weight was not changed: {key}")
         for key in sorted(index["weight_map"]):
             if key in transformed:
                 continue
