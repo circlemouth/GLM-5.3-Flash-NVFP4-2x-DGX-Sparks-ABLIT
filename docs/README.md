@@ -15,6 +15,7 @@ Every document has one role; other documents link to it instead of repeating its
 | Repository instructions | Rules for AI agents and operators editing this checkout | [EN](../AGENTS.md) | — |
 | Licensing and notices | Apache-2.0 text, attribution, third-party provenance | [LICENSE](../LICENSE), [NOTICE](../NOTICE), [THIRD_PARTY_NOTICES](../THIRD_PARTY_NOTICES.md), [LICENSES/](../LICENSES/) | — |
 | Optional BF16 o_proj overlay | Preparation, configuration, provenance and acceptance boundary | [Overlay](abliteration.md), [Licensing](abliteration-licensing.md), [Validation](abliteration-validation.md) | [Overlay](abliteration.ja.md), [Licensing](abliteration-licensing.ja.md), [Validation](abliteration-validation.ja.md) |
+| Static AXL-ABLIT checkpoint | Fixed inputs, allowed tensor delta, materialization, launch and validation boundaries | [EN](axl-ablit-derived-checkpoint.md) | [JA](axl-ablit-derived-checkpoint.ja.md) |
 
 ## Deploy and operate
 

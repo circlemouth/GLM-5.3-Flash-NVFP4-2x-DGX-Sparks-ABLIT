@@ -14,6 +14,27 @@ def sha(path):
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
+def derived_identity(model, derived):
+    if derived and "manifest_sha256" in derived:
+        from .axl_ablit import verify_manifest
+
+        report = verify_manifest(model, derived["manifest_sha256"])
+        manifest = report["manifest"]
+        return {
+            "enabled": True,
+            "manifest_sha256": report["manifest_sha256"],
+            "artifact_sha256": hashlib.sha256(
+                json.dumps(manifest["output"], sort_keys=True).encode()
+            ).hexdigest(),
+            "base_revision": manifest["base"]["revision"],
+            "donor_revision": manifest["donor"]["revision"],
+            "transformed_key_count": manifest["transformed_key_count"],
+        }
+    if derived:
+        return {"enabled": True, "manifest_sha256": None}
+    return {"enabled": False}
+
+
 def inspect(profile, config_path, rank, *, recovery=False):
     checks = server.preflight(
         profile, config_path, rank, check_memory=False, recovery=recovery
@@ -71,6 +92,7 @@ def inspect(profile, config_path, rank, *, recovery=False):
         ),
         None,
     )
+    derived = settings.derived_checkpoint(profile)
     common = {
         "profile": settings.fingerprint(profile),
         "source": hashlib.sha256(
@@ -87,6 +109,7 @@ def inspect(profile, config_path, rank, *, recovery=False):
             if settings.weight_overlay(profile)
             else {"enabled": False}
         ),
+        "derived_checkpoint": derived_identity(model, derived),
         "model_config": sha(model / "config.json"),
         "weight_index": sha(index_path),
         "tokenizer_and_templates": {

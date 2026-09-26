@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "axl": {
+    "repo": "Bizuayeu/GLM-5.3-Flash-NVFP4-attn-lmhead-W4A16",
+    "revision": "8da41003c93593de40bf4a48e27f8d3f41973ad7",
+    "identity_sha256": {
+      "config.json": "df9e6fbd1d8c393a9af5d5ac3374ad2bc8ea21ad96f3aec161d649d51f229dfb",
+      "generation_config.json": "a07de3408f578c6a7ca8a1646aa91a41df55d539349fda15fb8b611eb007e9b7",
+      "hf_quant_config.json": "18e6ff5192a98cca409ad47ccf9284e27ded8312826648315149f0dd982fb660",
+      "model.safetensors.index.json": "fc3cdd2a4ea0fb79fef1bc3ed7198af3d567f7f60c22aab7a6887c139c5fe24d",
+      "tokenizer_config.json": "98b1271574f41abf89427ae2dda030d94dc9478f0edc5a8bd240db213c6fd5fc"
+    },
+    "tree": {
+      "file_count": 30,
+      "total_bytes": 194881695290,
+      "aggregate_sha256": "048049d4b27a235590efde6d4fc56ee3e3fc3f2eb928cd4d9e5b62ffd74d65a4"
+    }
+  },
+  "nvidia": {
+    "repo": "nvidia/GLM-5.3-Flash-NVFP4",
+    "revision": "423acf37583782c51c142d145aef733d72943d93",
+    "tree": {
+      "file_count": 44,
+      "total_bytes": 204476277515,
+      "aggregate_sha256": "1d8bb7092e9835bd60e7024395294e9a170afb5a205c7fe7531b009079f1d76f"
+    }
+  },
+  "donor": {
+    "repo": "dealignai/GLM-5.3-Flash-UNCENSORED-NVFP4",
+    "revision": "745aac2ff0f10acf961f396df3f9418598aa7327",
+    "overlay_manifest_sha256": "f6a9398f59a787ffee857ef89f86f71512362d1e9540fe560ad4fdd15342345a"
+  },
+  "requantizer": {
+    "repo": "tenhkspark/glm53-flash-nvfp4-2node",
+    "revision": "8ee63a676c6e8550f49b52aec7c5c05b56eb5553",
+    "path": "requant/requant.py",
+    "sha256": "0a59e2516cc408b400bc85ffc13a4a8bfedcdd4003466260a94258625feb8046",
+    "torch": "2.13.0+cu130"
+  },
+  "output_manifest": "axl-ablit-manifest.json"
+}

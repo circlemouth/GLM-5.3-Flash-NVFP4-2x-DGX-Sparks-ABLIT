@@ -66,6 +66,8 @@ vision = true # Loads the vision tower for IMAGE input; omitted = false (text/to
 [runtime.derived_checkpoint]
 enabled = true
 path = "/srv/glm53/weights/GLM-5.3-Flash-NVFP4-l-split"
+# Static AXL-ABLIT artifacts must uncomment this and pin their generated manifest.
+# manifest_sha256 = "0000000000000000000000000000000000000000000000000000000000000000"
 requant_target = "l"
 overlays = [
   { target = "kda.py", source = "/srv/glm53/source/overlays/kda-quant-split.py", sha256 = "144a835faa57c56f5257c05a5cf6742102a21e38a92d39c2a1e26cd4ada680fd", base_sha256 = "99cfc24678c0a99f2c813c20e3dcc30c8bfac4f55ec4299737689d5d51f472cd", marker = "kda-quant-overlay" },

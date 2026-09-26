@@ -70,7 +70,12 @@ OPTIONAL_KEYS = {
         {"prefix_cache_retention_interval", "mm_processor_cache_gb"}
     ),
     "server.api": frozenset(
-        {"prompt_tokens_details", "dev_endpoints", "chat_template", "chat_template_sha256"}
+        {
+            "prompt_tokens_details",
+            "dev_endpoints",
+            "chat_template",
+            "chat_template_sha256",
+        }
     ),
     "server.validation": frozenset({"memory_probe"}),
     "server.resources": frozenset({"stall_seconds"}),
@@ -430,14 +435,20 @@ def derived_checkpoint(profile):
 def validate_derived(derived):
     """A locally requantized checkpoint and the source overlays it needs to boot."""
     name = "runtime.derived_checkpoint"
-    if not isinstance(derived, dict) or derived.keys() - {"enabled"} != {
-        "path",
-        "requant_target",
-        "overlays",
-    }:
+    required = {"path", "requant_target", "overlays"}
+    optional = {"enabled", "manifest_sha256"}
+    if (
+        not isinstance(derived, dict)
+        or derived.keys() - optional != required
+        or derived.keys() - required - optional
+    ):
         raise ValueError(f"Unknown/missing settings in {name}")
     if type(derived.get("enabled", True)) is not bool:
         raise ValueError(f"{name}.enabled must be true or false")
+    if "manifest_sha256" in derived and not re.fullmatch(
+        r"[0-9a-f]{64}", str(derived["manifest_sha256"])
+    ):
+        raise ValueError(f"{name}.manifest_sha256 must be a SHA-256 digest")
 
     def absolute(value):
         return isinstance(value, str) and PurePosixPath(value).is_absolute()

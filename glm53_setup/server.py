@@ -282,7 +282,7 @@ def derived_checks(profile, metadata):
         )
 
     draft = f".layers.{MODEL_LAYERS}."
-    return {
+    checks = {
         "derived_checkpoint": quantization.get("quant_algo") == "MIXED_PRECISION"
         and (quantization.get("producer") or {}).get("requant_target")
         == derived["requant_target"],
@@ -290,6 +290,17 @@ def derived_checks(profile, metadata):
         or not any(draft in key for key in quantization.get("quantized_layers", {})),
         "derived_overlays": all(map(overlay_matches, derived["overlays"])),
     }
+    if "manifest_sha256" in derived:
+        try:
+            from .axl_ablit import verify_manifest
+
+            report = verify_manifest(Path(derived["path"]), derived["manifest_sha256"])
+            checks["derived_manifest"] = (
+                report["manifest"]["transformed_key_count"] == 88
+            )
+        except (OSError, ValueError, KeyError, TypeError):
+            checks["derived_manifest"] = False
+    return checks
 
 
 def preflight(profile, config_path, rank, *, check_memory=True, recovery=False):

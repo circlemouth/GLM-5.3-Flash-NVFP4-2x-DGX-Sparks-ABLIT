@@ -54,3 +54,31 @@ imageのsource hash検査は、想定外のvLLM本体またはMTP loaderへのpa
 ロード中に対象が欠ける、重複する、変更される、BF16以外になる、形状が異なる場合は起動を失敗させます。
 元のcheckpointは編集しません。
 起動成功だけでは両rankに格納された値を証明できないため、採用前に[検証手順](abliteration-validation.ja.md)を実行します。
+
+## 静的AXL-ABLIT checkpoint
+
+静的経路はBF16 runtime overlayとは別です。固定した公開AXL checkpoint全体を基盤とし、donor BF16の本体第15～43層`o_proj.weight`をbyte-exactな`W4A16_NVFP4`へ再量子化します。標準MTPの第45層だけはBF16のままコピーし、MTPを量子化しません。入力と変換器は[`config/axl_ablit.lock.json`](../config/axl_ablit.lock.json)で固定します。
+
+`build`は既存レポートを信用せず、固定NVIDIA入力から29層・87テンソルの再現gateを毎回実行します。AXLとNVIDIAの全ファイルをweight shardを含む固定tree集約値で認証し、dtype、形状、raw-byte digestが公開AXLと一致しない場合は出力を作りません。
+
+```sh
+python tools/prepare_axl_ablit.py reproduce \
+  --nvidia /models/nvidia-pinned \
+  --axl /models/axl-pinned \
+  --output /private/axl-reproduction.json
+
+python tools/prepare_axl_ablit.py build \
+  --axl /models/axl-pinned \
+  --nvidia /models/nvidia-pinned \
+  --donor-overlay /private/overlay-assets \
+  --reproduction-report /private/axl-reproduction.json \
+  --output /models/axl-ablit-derived
+
+python tools/prepare_axl_ablit.py verify \
+  --checkpoint /models/axl-ablit-derived \
+  --base /models/axl-pinned
+```
+
+`build`は基盤とdonorへ書き込まず、明示的な未完了markerを持つ同階層の一時directoryで完全検証してから、要求先へatomic renameします。生成manifestは固定した出所、変換器、88キーの差分、全shard hash、対象外tensorと補助fileの不変性を記録します。
+
+起動には既存の`runtime.derived_checkpoint`を使い、`runtime.weight_overlay`と同時に有効化しません。AXL-ABLIT用profileには生成manifestのSHA-256を固定します。preflightは全shardを実際にhashし、manifestと内容が一致しないcheckpointを拒否します。通常BIZ、BF16-ABLIT、通常AXLの既存経路は変更しません。
