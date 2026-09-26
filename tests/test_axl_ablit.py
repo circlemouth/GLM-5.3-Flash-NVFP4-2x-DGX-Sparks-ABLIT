@@ -96,6 +96,26 @@ class SafetensorsRewriteTests(unittest.TestCase):
             with self.assertRaisesRegex(axl_ablit.AxlAblitError, "duplicate JSON key"):
                 axl_ablit.read_header(path)
 
+    def test_donor_reader_uses_tensor_digest_not_file_digest(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "layer-15.safetensors"
+            key = "model.language_model.layers.15.self_attn.o_proj.weight"
+            raw = b"tensor-bytes"
+            write_shard(path, {key: ("BF16", [1, 6], raw)})
+            row = {
+                "file": path.name,
+                "key": key,
+                "sha256": axl_ablit.sha256_file(path),
+                "tensor_sha256": hashlib.sha256(raw).hexdigest(),
+            }
+            actual, item = axl_ablit._donor_raw(root, row)
+            self.assertEqual(actual, raw)
+            self.assertEqual(item["dtype"], "BF16")
+            row["tensor_sha256"] = "0" * 64
+            with self.assertRaisesRegex(axl_ablit.AxlAblitError, "bytes mismatch"):
+                axl_ablit._donor_raw(root, row)
+
 
 class BuildSafetyTests(unittest.TestCase):
     def test_source_tree_authentication_rejects_extra_file(self):

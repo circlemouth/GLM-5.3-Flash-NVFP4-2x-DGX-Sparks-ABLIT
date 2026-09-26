@@ -497,7 +497,10 @@ def _donor_raw(donor: Path, row: dict) -> tuple[bytearray, dict]:
     with path.open("rb") as stream:
         stream.seek(8 + header_len + start)
         raw = bytearray(stream.read(end - start))
-    if len(raw) != end - start or hashlib.sha256(raw).hexdigest() != row["sha256"]:
+    if (
+        len(raw) != end - start
+        or hashlib.sha256(raw).hexdigest() != row["tensor_sha256"]
+    ):
         raise AxlAblitError(f"donor tensor bytes mismatch: {key}")
     return raw, item
 
@@ -529,7 +532,7 @@ def _prepare_replacements(donor: Path, temp: Path) -> tuple[dict, dict, dict]:
             )
             replacements[key] = info
             transformed[key] = {
-                "donor_sha256": row["sha256"],
+                "donor_sha256": row["tensor_sha256"],
                 "output_sha256": info["sha256"],
                 "dtype": "BF16",
                 "shape": expected_shape,
@@ -551,7 +554,7 @@ def _prepare_replacements(donor: Path, temp: Path) -> tuple[dict, dict, dict]:
             )
             replacements[key] = info
             transformed[key] = {
-                "donor_weight_sha256": row["sha256"],
+                "donor_weight_sha256": row["tensor_sha256"],
                 "output_sha256": info["sha256"],
                 "dtype": dtype,
                 "shape": list(tensor.shape),
