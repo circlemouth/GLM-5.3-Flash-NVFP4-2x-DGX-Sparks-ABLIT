@@ -2,7 +2,7 @@
 
 評価日: 2026-09-27
 
-チェックポイント生成実装: `2d6472588742f75238e412f2a633d32447790179`
+従来記載した生成実装の基準commit: `2d6472588742f75238e412f2a633d32447790179`。このGit commitを実行時HEADと確定したものではありません。来歴訂正は下記参照。
 
 Controller 評価統合: `feaed79e`
 
@@ -24,7 +24,9 @@ AXL-ABLIT 派生 checkpoint の生成、全 shard の完全性、起動前 fail-
 | NVIDIA BF16 parity source | `nvidia/GLM-5.3-Flash-NVFP4` | `423acf37583782c51c142d145aef733d72943d93` |
 | donor | `dealignai/GLM-5.3-Flash-UNCENSORED-NVFP4` | `745aac2ff0f10acf961f396df3f9418598aa7327` |
 
-入力 tree はファイル数、総 byte 数、全ファイル集約 SHA-256 で固定した。converter は SHA-256 `3e3cd0e37706a63e5959baf0f38d7b1268b83d6e42ce48f5b7f66c98c54669ef`、PyTorch は `2.13.0+cu130` である。
+入力 tree はファイル数、総 byte 数、全ファイル集約 SHA-256 で固定した。**来歴訂正（2026-09-27）：**従来のconverter SHA-256 `3e3cd0e37706a63e5959baf0f38d7b1268b83d6e42ce48f5b7f66c98c54669ef`は、従来挙げた基準Git commit `2d6472588742f75238e412f2a633d32447790179`のソースファイルを示す値であり、無変更の出力manifestに記録されたモジュールの値ではない。manifestの`converter.module_sha256`と`nvidia_reproduction.converter_module_sha256`は、いずれも`cc8e05b22d38fc6b27c31521105972a3d3b5d1d6d44e866e6abfc44fcf95c32b`である。既存の`all-29-reproduction.json`のSHA-256はmanifest記録と同じ`f2662f9474c650faf679d1e259285547f2ba874e42fbeb87705ea6b15651225b`で、内部のconverterハッシュも後者で一致する。旧commitの直後にある公開Git commit `a9ee7b4ae99e3627665cc730d7c13e94bee0a53f`のソースファイルと現行checkoutもそのSHA-256に一致する。これは**manifestの記録と一致する公開ソース版**の特定であり、当時の実行時HEADの確定ではない。これらのファイルには実行時HEADの証明がない。Git blob ID（`2d64725`の`d8eaf6a7b2fe9ea0c8c2437a6d6ea6a5eabc2959`と`a9ee7b4`の`6e2fbc4bd33ea2dfe9df5c726e775f358380524c`）はGitのファイルobjectを示し、ファイルのSHA-256や実行commitとは別物である。再現reportに記載されたPyTorchは`2.13.0+cu130`。
+
+`2d64725`→`a9ee7b4`の差分は、`tensor_meta`/`hash_tensor`へのsafetensorsヘッダーキャッシュ、`verify`での再利用、`affected_shards`集合の計算位置の変更、およびヘッダー再利用のテストである。この差分に量子化演算、対象key、requantizerの変更はない。この限定した差分確認を当時の実行環境全体の証明とは扱わない。manifestと元再現reportのモジュール値は一致し、無変更のcheckpointはmanifestに対して検証済みである。訂正のための再生成・再現実行は行っていない。
 
 ## 生成物
 

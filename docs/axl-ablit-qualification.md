@@ -2,7 +2,7 @@
 
 Evaluation date: 2026-09-27
 
-Checkpoint generation implementation: `2d6472588742f75238e412f2a633d32447790179`
+Previously cited checkpoint generation implementation baseline: `2d6472588742f75238e412f2a633d32447790179`. This Git commit is not an attested execution HEAD; see the provenance correction below.
 
 Controller evaluation integration: `feaed79e`
 
@@ -24,7 +24,9 @@ Checkpoint weights were not uploaded; the candidate was not adopted for producti
 | NVIDIA BF16 parity source | `nvidia/GLM-5.3-Flash-NVFP4` | `423acf37583782c51c142d145aef733d72943d93` |
 | Donor | `dealignai/GLM-5.3-Flash-UNCENSORED-NVFP4` | `745aac2ff0f10acf961f396df3f9418598aa7327` |
 
-The input tree was fixed by file count, total bytes, and the aggregate SHA-256 of all files. The converter SHA-256 is `3e3cd0e37706a63e5959baf0f38d7b1268b83d6e42ce48f5b7f66c98c54669ef`; PyTorch is `2.13.0+cu130`.
+The input tree was fixed by file count, total bytes, and the aggregate SHA-256 of all files. **Provenance correction (2026-09-27):** the earlier converter SHA-256 `3e3cd0e37706a63e5959baf0f38d7b1268b83d6e42ce48f5b7f66c98c54669ef` identifies the source file at the previously cited baseline Git commit `2d6472588742f75238e412f2a633d32447790179`, **not** the module recorded in the unchanged output manifest. Both `converter.module_sha256` and `nvidia_reproduction.converter_module_sha256` in the manifest record `cc8e05b22d38fc6b27c31521105972a3d3b5d1d6d44e866e6abfc44fcf95c32b`. The original `all-29-reproduction.json` hashes to `f2662f9474c650faf679d1e259285547f2ba874e42fbeb87705ea6b15651225b` as recorded by the manifest and also records the latter converter hash. The public source file at the immediate child Git commit `a9ee7b4ae99e3627665cc730d7c13e94bee0a53f` and the current checkout have exactly that SHA-256; this identifies a **matching public source revision**, not the execution HEAD at generation. The execution HEAD was not attested by these files. Git blob IDs (`d8eaf6a7b2fe9ea0c8c2437a6d6ea6a5eabc2959` at `2d64725` and `6e2fbc4bd33ea2dfe9df5c726e775f358380524c` at `a9ee7b4`) identify Git file objects, not file SHA-256 values or execution commits. PyTorch in the reproduction report is `2.13.0+cu130`.
+
+The `2d64725` → `a9ee7b4` diff adds cached safetensors headers to `tensor_meta`/`hash_tensor`, reuses them in `verify`, moves `affected_shards` set construction outside the loop, and adds a test for header reuse. It does not change the target keys, quantization operations or requantizer in that diff. This bounded source review is not independent proof of the entire historical execution environment; the manifest and reproduction report agree on the module identity, and the unmodified checkpoint was verified against its manifest. No rebuild or reproduction was run for this correction.
 
 ## Generated artifacts
 

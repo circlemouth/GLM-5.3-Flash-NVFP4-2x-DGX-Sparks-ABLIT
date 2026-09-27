@@ -2,6 +2,10 @@
 
 [日本語](CHANGELOG.ja.md) (from 1.6.0; this English file is canonical and the GitHub Release is made from it)
 
+## Unreleased — 2026-09-27 documentation correction
+
+- AXL-ABLIT qualification: correct the previously attributed converter SHA-256. The old value identifies the `2d64725` baseline file; the unchanged manifest and its pinned original reproduction report identify the module SHA-256 matching the public `a9ee7b4` file. The generation-time execution HEAD is not attested. No weights, runtime manifest, conversion code or deployed profile changed; no model was published.
+
 ## 1.11.3 — 2026-09-23
 
 ### Documentation
