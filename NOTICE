@@ -1,3 +1,5 @@
+Modified to add numerical-reference attribution for static AXL-ABLIT.
+
 GLM-5.3-Flash-NVFP4-2x-DGX-Sparks-BIZ
 Copyright 2026 the project contributors.
 
@@ -27,3 +29,10 @@ FreedomBench choice extraction, prompt construction and option ordering are
 adapted from FreedomBench by Lore Hex Corp, Apache License 2.0, revision
 cc037ac7b286ba4f910309162367d856cbd25d58. Local changes add pinned-data checks,
 local-only transport and separate coverage, truncation and error accounting.
+
+The numerical reference converter for static AXL-ABLIT is identified in
+config/axl_ablit.lock.json: tenhkspark/glm53-flash-nvfp4-2node,
+revision 8ee63a676c6e8550f49b52aec7c5c05b56eb5553, requant/requant.py.
+Copyright 2026 tenhkspark. The original Apache-2.0 text is retained in
+LICENSES/tenhkspark-Apache-2.0.txt. This attribution records a numerical
+reference and does not assert wholesale copying of the reference source.
