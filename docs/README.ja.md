@@ -15,6 +15,7 @@
 | リポジトリ指示 | このcheckoutを編集するAIエージェント・運用者向けの規則 | [EN](../AGENTS.md) | — |
 | 任意のBF16 o_proj overlay | 準備、設定、出所、受入境界 | [Overlay](abliteration.md)、[Licensing](abliteration-licensing.md)、[Validation](abliteration-validation.md) | [Overlay](abliteration.ja.md)、[ライセンス](abliteration-licensing.ja.md)、[検証](abliteration-validation.ja.md) |
 | 静的AXL-ABLIT checkpoint | 固定入力、許可tensor差分、生成、起動、検証の境界 | [EN](axl-ablit-derived-checkpoint.md) | [JA](axl-ablit-derived-checkpoint.ja.md) |
+| AXL-ABLIT適格性報告 | オフライン完全検証、TP=2／MTPの実験的推論、A→B→A′速度実測、復元と限界（本番受け入れではない） | [EN](axl-ablit-qualification.md) | [JA](axl-ablit-qualification.ja.md) |
 | ライセンス・通知 | Apache-2.0本文、帰属、第三者の出所 | [LICENSE](../LICENSE)、[NOTICE](../NOTICE)、[THIRD_PARTY_NOTICES](../THIRD_PARTY_NOTICES.md)、[LICENSES/](../LICENSES/) | — |
 
 ## 導入・運用
@@ -64,7 +65,7 @@
 | MTPの投機設定例 | [examples/speculative.mtp1.json](../examples/speculative.mtp1.json)、[speculative.mtp3.json](../examples/speculative.mtp3.json) |
 | FreedomBenchの設問・正答の固定 | [config/freedombench.lock.json](../config/freedombench.lock.json) |
 | 施策ID、採否、再評価条件 | [施策台帳](optimization-catalog.ja.md) |
-| 実測値とその条件 | [ベンチマーク](benchmarks.ja.md)、[画像入力](vision.ja.md)、[投機的デコーディング](speculative-decoding.ja.md)、[LPA](lpa.ja.md)、[部品検証](component-validation.ja.md)、[候補順序](candidate-order.ja.md)、[Indexer再利用](indexer-reuse.ja.md)、[NCCL検証](nccl-validation.ja.md)、[FreedomBench](freedombench.ja.md) |
+| 実測値とその条件 | [ベンチマーク](benchmarks.ja.md)、[AXL-ABLITの実験的適格性報告](axl-ablit-qualification.ja.md)、[画像入力](vision.ja.md)、[投機的デコーディング](speculative-decoding.ja.md)、[LPA](lpa.ja.md)、[部品検証](component-validation.ja.md)、[候補順序](candidate-order.ja.md)、[Indexer再利用](indexer-reuse.ja.md)、[NCCL検証](nccl-validation.ja.md)、[FreedomBench](freedombench.ja.md) |
 | APC／LPAの共有状態契約（N・H・T・R・B） | [APC優先LPAの設計](apc-lpa-design.ja.md) |
 | クライアント認証、allocator、レール、切替・復旧の契約 | [起動契約](launch-safety.ja.md) |
 | 切替の後のdecode検査：その定型と道具2件 | [起動契約](launch-safety.ja.md#切替の後のdecode検査)。`tools/decode_check.py`、`tools/decode_divergence.py` |

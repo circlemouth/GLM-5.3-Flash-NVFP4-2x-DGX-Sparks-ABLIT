@@ -16,6 +16,7 @@ Every document has one role; other documents link to it instead of repeating its
 | Licensing and notices | Apache-2.0 text, attribution, third-party provenance | [LICENSE](../LICENSE), [NOTICE](../NOTICE), [THIRD_PARTY_NOTICES](../THIRD_PARTY_NOTICES.md), [LICENSES/](../LICENSES/) | — |
 | Optional BF16 o_proj overlay | Preparation, configuration, provenance and acceptance boundary | [Overlay](abliteration.md), [Licensing](abliteration-licensing.md), [Validation](abliteration-validation.md) | [Overlay](abliteration.ja.md), [Licensing](abliteration-licensing.ja.md), [Validation](abliteration-validation.ja.md) |
 | Static AXL-ABLIT checkpoint | Fixed inputs, allowed tensor delta, materialization, launch and validation boundaries | [EN](axl-ablit-derived-checkpoint.md) | [JA](axl-ablit-derived-checkpoint.ja.md) |
+| AXL-ABLIT qualification | Offline verification, experimental TP=2/MTP inference, A→B→A′ speed measurements, restoration and limitations (no production acceptance) | [EN](axl-ablit-qualification.md) | [JA](axl-ablit-qualification.ja.md) |
 
 ## Deploy and operate
 
@@ -65,7 +66,7 @@ Every document has one role; other documents link to it instead of repeating its
 | MTP speculative configuration examples | [examples/speculative.mtp1.json](../examples/speculative.mtp1.json), [speculative.mtp3.json](../examples/speculative.mtp3.json) |
 | FreedomBench item and answer pins | [config/freedombench.lock.json](../config/freedombench.lock.json) |
 | Initiative IDs, adoption decisions, reevaluation criteria | [Optimization catalog](optimization-catalog.md) |
-| Measured numbers and their conditions | [Benchmarks](benchmarks.md), [image input](vision.md), [speculative decoding](speculative-decoding.md), [LPA](lpa.md), [component validation](component-validation.md), [candidate order](candidate-order.md), [indexer reuse](indexer-reuse.md), [NCCL validation](nccl-validation.md), [FreedomBench](freedombench.md) |
+| Measured numbers and their conditions | [Benchmarks](benchmarks.md), [AXL-ABLIT experimental qualification](axl-ablit-qualification.md), [image input](vision.md), [speculative decoding](speculative-decoding.md), [LPA](lpa.md), [component validation](component-validation.md), [candidate order](candidate-order.md), [indexer reuse](indexer-reuse.md), [NCCL validation](nccl-validation.md), [FreedomBench](freedombench.md) |
 | APC/LPA shared-state contract (N, H, T, R, B) | [APC-first LPA design](apc-lpa-design.md) |
 | Client authentication, allocator, rails, switch and recovery contracts | [Launch contracts](launch-safety.md) |
 | The decode check after a switch: its routine and the two tools | [Launch contracts](launch-safety.md#after-a-switch-the-decode-check); `tools/decode_check.py`, `tools/decode_divergence.py` |
