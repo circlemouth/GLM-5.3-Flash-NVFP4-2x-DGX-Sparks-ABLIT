@@ -14,9 +14,42 @@ def sha(path):
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
+def derived_identity(model, derived, *, manifest_report=None):
+    if derived and "manifest_sha256" in derived:
+        if manifest_report is None:
+            from .axl_ablit import verify_manifest
+
+            manifest_report = verify_manifest(model, derived["manifest_sha256"])
+        report = manifest_report
+        if report["manifest_sha256"] != derived["manifest_sha256"]:
+            raise ValueError(
+                "Derived checkpoint manifest evidence does not match profile"
+            )
+        manifest = report["manifest"]
+        return {
+            "enabled": True,
+            "manifest_sha256": report["manifest_sha256"],
+            "artifact_sha256": hashlib.sha256(
+                json.dumps(manifest["output"], sort_keys=True).encode()
+            ).hexdigest(),
+            "base_revision": manifest["base"]["revision"],
+            "donor_revision": manifest["donor"]["revision"],
+            "transformed_key_count": manifest["transformed_key_count"],
+        }
+    if derived:
+        return {"enabled": True, "manifest_sha256": None}
+    return {"enabled": False}
+
+
 def inspect(profile, config_path, rank, *, recovery=False):
+    evidence = {}
     checks = server.preflight(
-        profile, config_path, rank, check_memory=False, recovery=recovery
+        profile,
+        config_path,
+        rank,
+        check_memory=False,
+        recovery=recovery,
+        evidence=evidence,
     )
     if not checks["passed"]:
         detail = {key: checks[key] for key in ("checks", "foreign_gpu_containers")}
@@ -71,6 +104,7 @@ def inspect(profile, config_path, rank, *, recovery=False):
         ),
         None,
     )
+    derived = settings.derived_checkpoint(profile)
     common = {
         "profile": settings.fingerprint(profile),
         "source": hashlib.sha256(
@@ -78,6 +112,18 @@ def inspect(profile, config_path, rank, *, recovery=False):
         ).hexdigest(),
         "image": image["Id"],
         "revision": load_lock()["revision"],
+        "weight_overlay": (
+            {
+                "enabled": True,
+                "manifest_sha256": settings.weight_overlay(profile)["manifest_sha256"],
+                "donor_revision": settings.weight_overlay(profile)["donor_revision"],
+            }
+            if settings.weight_overlay(profile)
+            else {"enabled": False}
+        ),
+        "derived_checkpoint": derived_identity(
+            model, derived, manifest_report=evidence.get("derived_manifest")
+        ),
         "model_config": sha(model / "config.json"),
         "weight_index": sha(index_path),
         "tokenizer_and_templates": {
